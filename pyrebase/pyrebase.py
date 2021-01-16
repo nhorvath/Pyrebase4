@@ -460,7 +460,7 @@ class Storage:
             return request_object.json()
 
     def delete(self, name):
-        self.bucket.delete_blob(name)
+        self.storage_bucket.delete_blob(name)
 
     def download(self, path, filename, token=None):
         # remove leading backlash
