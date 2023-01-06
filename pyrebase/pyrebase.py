@@ -469,7 +469,7 @@ class Storage:
             raise_detailed_error(request_object)
             return request_object.json()
         elif self.credentials:
-            blob = self.bucket.blob(path)
+            blob = self.bucket.blob(path,chunk_size=262144)
             if isinstance(file, str):
                 return blob.upload_from_filename(filename=file)
             else:
