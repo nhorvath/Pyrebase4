@@ -507,7 +507,7 @@ class Storage:
         # remove leading backlash
         url = self.get_url(token)
         if path.startswith('/'):
-            path = path[1:]
+            path = path.lstrip('/')
         if self.credentials:
             blob = self.bucket.get_blob(path)
             if not blob is None:
@@ -527,10 +527,10 @@ class Storage:
                         f.write(chunk)
 
     def get_url(self, token):
-        path = self.path
+        path = self.path if self.path else ''
         self.path = None
         if path.startswith('/'):
-            path = path[1:]
+            path = path.lstrip('/')
         if token:
             return "{0}/o/{1}?alt=media&token={2}".format(self.storage_bucket, quote(path, safe=''), token)
         return "{0}/o/{1}?alt=media".format(self.storage_bucket, quote(path, safe=''))
