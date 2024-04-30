@@ -17,7 +17,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'requests-toolbelt>=0.7.1,<1.0',
-        'requests>=2.19.1,<2.30',
+        'requests>=2.31',
         'urllib3>=1.21.1,<2',
         'gcloud>=0.18.3',
         'oauth2client>=4.1.2',
