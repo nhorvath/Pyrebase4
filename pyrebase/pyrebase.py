@@ -495,7 +495,7 @@ class Storage:
         if self.credentials:
             self.bucket.delete_blob(name)
         else:
-            request_ref = self.storage_bucket + "/o/?name={0}".format(name)
+            request_ref = self.storage_bucket + "/o?name={0}".format(name)
             if token:
                 headers = {"Authorization": "Firebase " + token}
                 request_object = self.requests.delete(request_ref, headers=headers)
