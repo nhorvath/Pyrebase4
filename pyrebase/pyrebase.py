@@ -14,7 +14,7 @@ from .pyre_sseclient import SSEClient
 import threading
 import socket
 from oauth2client.service_account import ServiceAccountCredentials
-from gcloud import storage
+from google.cloud import storage
 from requests_toolbelt.adapters import appengine
 from uuid import uuid4
 
