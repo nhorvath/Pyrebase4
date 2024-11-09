@@ -1,7 +1,6 @@
 import re
 import time
 import warnings
-import threading
 import six
 
 import requests
