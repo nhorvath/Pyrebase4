@@ -19,6 +19,7 @@ class Firebase:
         self.auth_domain = config["authDomain"]
         self.database_url = config["databaseURL"]
         self.storage_bucket = config["storageBucket"]
+        self.project_id = config["projectId"]
         self.credentials = None
         self.requests = requests.Session()
         if config.get("serviceAccount"):
@@ -50,8 +51,8 @@ class Firebase:
     def database(self):
         return Database(self.credentials, self.api_key, self.database_url, self.requests)
     
-    def firestore(self, project_id: str, firebase_path: str, database_name="(default)", auth_id: str | None=None):
-        return Firestore(self.requests, project_id, firebase_path, database_name, auth_id)
+    def firestore(self, firebase_path: str="/", database_name="(default)", auth_id: str | None=None):
+        return Firestore(self.requests, self.project_id, firebase_path, database_name, auth_id)
 
     def storage(self):
         return Storage(self.credentials, self.storage_bucket, self.requests)

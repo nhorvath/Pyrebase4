@@ -60,6 +60,7 @@ A Pyrebase app can use multiple Firebase services.
 ```firebase.database()``` - [Database](#database)
 
 ```firebase.storage()``` - [Storage](#storage)
+```firebase.firestore()``` - [Firestore](#firestore)
 
 Check out the documentation for each service for further details.
 
@@ -481,3 +482,84 @@ articles_by_likes = db.sort(articles, "likes")
 #### Index not defined
 
 +Indexing is [not enabled](https://firebase.google.com/docs/database/security/indexing-data) for the database reference.
+
+## Firestore
+
+The `firestore` method in Pyrebase4 allows interaction with Firebase Firestore.
+
+### Initialize Firestore
+
+Initialize Firestore with required project and authentication parameters.
+
+```python
+from pyrebase import Firestore
+
+firebase_path = "your_firestore_path" # Optional. Base path for all Firestore operations. Defaults to "/"
+auth_id = "your_auth_id_token" # Optional. Enables authorized transactions.
+database_name = "your_database_name" # Optional. defaults to "(default)"
+
+
+firestore = firebase.firestore(firebase_path=firebase_path, database_name=database_name, auth_id=auth_id)
+```
+
+### Authorization
+Authorize Firestore using an authentication token. Firestore can be authorized at any time.
+```python
+firestore.authorize("auth_id_token")
+```
+
+### CRUD Operations
+#### Create a Document
+Creates a new document.
+Alias to: [`firestore.update_document("collection/document", {})`](#update-a-document)
+```python
+data = {"name": "John Doe", "age": 30} # Optional
+firestore.create_document("users/user_id", data)
+# Alternatively, updating a non-existing document will create a new one.
+firestore.create_document("users/user_id", data) # Data is required, but can be an empty dictionary
+```
+
+#### Retrieve a Document
+Fetches a document.
+
+```python
+document = firestore.get_document("users/user_id")
+print(document)
+```
+
+#### Batch Get Documents
+Fetch multiple documents in one batch.
+```python
+documents = firestore.batch_get_documents(["users/user_id1", "users/user_id2"])
+```
+
+#### Run Query
+Run a structured query against a collection.
+```python
+query = {"field": "name", "value": "John Doe"}
+results = firestore.run_query("users", query)
+```
+
+#### Update a Document
+
+Update data in an existing document. If the document does not exist, it will be created with the new data.
+
+```python
+firestore.update_document("users/user_id", {"age": 31})
+```
+
+#### Delete a Document
+
+Deletes a document.
+
+```python
+firestore.delete_document("users/user_id")
+```
+
+#### List Documents
+
+Lists all documents in a collection.
+
+```python
+documents = firestore.list_documents("users")
+```
