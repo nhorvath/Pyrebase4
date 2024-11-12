@@ -10,6 +10,7 @@ def raise_detailed_error(request_object):
         # TODO: Check if we get a { "error" : "Permission denied." } and handle automatically
         raise HTTPError(e, request_object.text)
 
+
 def convert_to_pyre(items):
     pyre_list = []
     for item in items:
@@ -22,3 +23,10 @@ def convert_list_to_pyre(items):
     for item in items:
         pyre_list.append(Pyre([items.index(item), item]))
     return pyre_list
+
+
+def replace_all(og: str, a: str, b: str):
+    while a in og:
+        og = og.replace(a, b)
+
+    return og
