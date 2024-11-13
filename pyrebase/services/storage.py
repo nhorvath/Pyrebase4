@@ -1,5 +1,5 @@
 from uuid import uuid4
-from gcloud import storage
+from google.cloud import storage
 from urllib.parse import quote
 from pyrebase.utils import raise_detailed_error
 import requests

@@ -1,6 +1,6 @@
 import datetime
 import json
-import python_jwt as jwt
+import jwt as jwt
 from pyrebase.utils import raise_detailed_error
 import requests
 from Crypto.PublicKey import RSA
@@ -34,17 +34,19 @@ class Auth:
 
     def create_custom_token(self, uid, additional_claims=None, expiry_minutes=60):
         service_account_email = self.credentials.service_account_email
-        private_key = RSA.importKey(self.credentials._private_key_pkcs8_pem)
+        private_key = self.credentials._private_key_pkcs8_pem
         payload = {
             "iss": service_account_email,
             "sub": service_account_email,
             "aud": "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
-            "uid": uid
+            "uid": uid, 
+            "iat": datetime.datetime.now(datetime.timezone.utc),  # issued at time
+            "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=expiry_minutes)
         }
         if additional_claims:
-            payload["claims"] = additional_claims
-        exp = datetime.timedelta(minutes=expiry_minutes)
-        return jwt.generate_jwt(payload, private_key, "RS256", exp)
+            payload.update(additional_claims)
+        token = jwt.encode(payload, private_key, algorithm="RS256") #create token
+        return token
 
     def sign_in_with_custom_token(self, token):
         request_ref = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key={0}".format(self.api_key)

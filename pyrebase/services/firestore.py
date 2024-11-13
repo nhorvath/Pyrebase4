@@ -1,5 +1,4 @@
 from datetime import datetime
-from requests import HTTPError
 from pyrebase.utils import raise_detailed_error, replace_all
 
 class Firestore:
