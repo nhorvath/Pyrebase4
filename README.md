@@ -153,6 +153,16 @@ auth.get_account_info(user['idToken'])
 ```python
 user = auth.refresh(user['refreshToken'])
 ```
+#### Change email
+```python
+auth.change_email(user['idToken'], "newemail@example.com")
+```
+
+#### Change password
+```python
+auth.change_password(user['idToken'], "newpassword123")
+```
+
 #### Delete account
 ```python
 auth.delete_user_account(user['idToken'])
