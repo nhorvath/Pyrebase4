@@ -474,7 +474,7 @@ class Storage:
             raise_detailed_error(request_object)
             return request_object.json()
         elif self.credentials:
-            blob = self.bucket.blob(path)
+            blob = self.bucket.blob(path,chunk_size=262144)
 
             # Add metadata to enable file previews in console
             blob.metadata = {"firebaseStorageDownloadTokens": str(uuid4())}
