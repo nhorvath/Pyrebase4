@@ -1,11 +1,10 @@
 import requests
 from requests import Session
+from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError
+from urllib3.contrib.appengine import is_appengine_sandbox
 
-try:
-    from urllib.parse import urlencode, quote
-except:
-    from urllib import urlencode, quote
+from urllib.parse import urlencode, quote
 import json
 import math
 from random import randrange
@@ -16,8 +15,8 @@ import threading
 import socket
 from oauth2client.service_account import ServiceAccountCredentials
 from gcloud import storage
-from requests.packages.urllib3.contrib.appengine import is_appengine_sandbox
 from requests_toolbelt.adapters import appengine
+from uuid import uuid4
 
 import python_jwt as jwt
 from Crypto.PublicKey import RSA
@@ -54,7 +53,7 @@ class Firebase:
             # ProtocolError('Connection aborted.', error(13, 'Permission denied'))
             adapter = appengine.AppEngineAdapter(max_retries=3)
         else:
-            adapter = requests.adapters.HTTPAdapter(max_retries=3)
+            adapter = HTTPAdapter()
 
         for scheme in ('http://', 'https://'):
             self.requests.mount(scheme, adapter)
@@ -281,7 +280,8 @@ class Database:
             headers['Authorization'] = 'Bearer ' + access_token
         return headers
 
-    def get(self, token=None, json_kwargs={}):
+    def get(self, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         build_query = self.build_query
         query_key = self.path.split("/")[-1]
         request_ref = self.build_request_url(token)
@@ -313,7 +313,8 @@ class Database:
                 sorted_response = sorted(request_dict.items(), key=lambda item: (build_query["orderBy"] in item[1], item[1].get(build_query["orderBy"], "")))
         return PyreResponse(convert_to_pyre(sorted_response), query_key)
 
-    def push(self, data, token=None, json_kwargs={}):
+    def push(self, data, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
@@ -321,7 +322,8 @@ class Database:
         raise_detailed_error(request_object)
         return request_object.json()
 
-    def set(self, data, token=None, json_kwargs={}):
+    def set(self, data, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
@@ -329,7 +331,8 @@ class Database:
         raise_detailed_error(request_object)
         return request_object.json()
 
-    def update(self, data, token=None, json_kwargs={}):
+    def update(self, data, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
@@ -386,7 +389,8 @@ class Database:
         data = sorted(dict(new_list).items(), key=lambda item: item[1][by_key], reverse=reverse)
         return PyreResponse(convert_to_pyre(data), origin.key())
 
-    def get_etag(self, token=None, json_kwargs={}):
+    def get_etag(self, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         request_ref = self.build_request_url(token)
         headers = self.build_headers(token)
         # extra header to get ETag
@@ -398,7 +402,8 @@ class Database:
            'value': request_object.json()
         }
 
-    def conditional_set(self, data, etag, token=None, json_kwargs={}):
+    def conditional_set(self, data, etag, token=None, json_kwargs=None):
+        json_kwargs = json_kwargs or {}
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
@@ -454,7 +459,7 @@ class Storage:
             self.path = new_path
         return self
 
-    def put(self, file, token=None):
+    def put(self, file, token=None, content_type=None):
         # reset path
         path = self.path
         self.path = None
@@ -470,10 +475,17 @@ class Storage:
             return request_object.json()
         elif self.credentials:
             blob = self.bucket.blob(path,chunk_size=262144)
+
+            # Add metadata to enable file previews in console
+            blob.metadata = {"firebaseStorageDownloadTokens": str(uuid4())}
             if isinstance(file, str):
                 return blob.upload_from_filename(filename=file)
             else:
-                return blob.upload_from_file(file_obj=file)
+                # If the file is not a string we need to patch the blob after upload to set the content type
+                blob.upload_from_string(file)
+                if content_type:
+                    blob.content_type = content_type
+                blob.patch()
         else:
             request_object = self.requests.post(request_ref, data=file_object)
             raise_detailed_error(request_object)
@@ -495,7 +507,7 @@ class Storage:
         # remove leading backlash
         url = self.get_url(token)
         if path.startswith('/'):
-            path = path[1:]
+            path = path.lstrip('/')
         if self.credentials:
             blob = self.bucket.get_blob(path)
             if not blob is None:
@@ -515,10 +527,10 @@ class Storage:
                         f.write(chunk)
 
     def get_url(self, token):
-        path = self.path
+        path = self.path if self.path else ''
         self.path = None
         if path.startswith('/'):
-            path = path[1:]
+            path = path.lstrip('/')
         if token:
             return "{0}/o/{1}?alt=media&token={2}".format(self.storage_bucket, quote(path, safe=''), token)
         return "{0}/o/{1}?alt=media".format(self.storage_bucket, quote(path, safe=''))
