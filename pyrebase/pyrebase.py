@@ -184,6 +184,28 @@ class Auth:
         raise_detailed_error(request_object)
         return request_object.json()
 
+    def change_email(self, id_token, new_email, return_secure_token=True):
+        """
+        https://firebase.google.com/docs/reference/rest/auth#section-change-email
+        """
+        request_ref = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}".format(self.api_key)
+        headers = {"content-type": "application/json; charset=UTF-8"}
+        data = json.dumps({"idToken": id_token, "email": new_email, "returnSecureToken": return_secure_token})
+        request_object = requests.post(request_ref, headers=headers, data=data)
+        raise_detailed_error(request_object)
+        return request_object.json()
+
+    def change_password(self, id_token, new_password, return_secure_token=True):
+        """
+        https://firebase.google.com/docs/reference/rest/auth#section-change-password
+        """
+        request_ref = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}".format(self.api_key)
+        headers = {"content-type": "application/json; charset=UTF-8"}
+        data = json.dumps({"idToken": id_token, "password": new_password, "returnSecureToken": return_secure_token})
+        request_object = requests.post(request_ref, headers=headers, data=data)
+        raise_detailed_error(request_object)
+        return request_object.json()
+
 
 class Database:
     """ Database Service """
